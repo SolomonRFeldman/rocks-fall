@@ -1,6 +1,7 @@
 import './App.css'
 import { w3cwebsocket as W3CWebSocket } from "websocket"
 import React, { useEffect, useState } from 'react'
+import GameBoard from './components/GameBoard'
 
 
 function App() {
@@ -46,6 +47,7 @@ function App() {
   return (
     <div className="App">
       {/* <input onChange={handleChange} value={text}></input> */}
+      <GameBoard />
     </div>
   );
 }
