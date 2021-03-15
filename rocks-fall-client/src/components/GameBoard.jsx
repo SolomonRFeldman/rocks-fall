@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react'
-import useCanvas from '../hooks/useCanvas'
+import React, { useEffect, useRef, useState } from 'react'
+import useImage from '../hooks/useImage'
 
 export default function GameBoard() {
   const [width, setWidth] = useState(window.innerWidth)
   const [height, setHeight] = useState(window.innerHeight)
-  const [canvasRef] = useCanvas()
 
   useEffect(() => {
     console.log('rerendering window size')
@@ -19,6 +18,21 @@ export default function GameBoard() {
       window.removeEventListener('resize', handleResize)
     }
   }, [])
+
+  const canvasRef = useRef(null)
+  const [map] = useImage('../test_map.png')
+  const [token] = useImage('../test_token.png')
+
+  useEffect(() => {
+    const canvasObj = canvasRef.current
+    const ctx = canvasObj.getContext('2d')
+
+    ctx.fillStyle = 'gray'
+    ctx.fillRect(0,0, window.innerWidth, window.innerHeight)
+
+    ctx.drawImage(map, 0, 0, map.width, map.height)
+    ctx.drawImage(token, 100, 100, 50, 50)
+  })
 
   return(
     <canvas
