@@ -50,8 +50,15 @@ export default function GameBoard() {
   
   const handleWheel = event => {
     const newZoomIncrement = zoomIncrement - (event.deltaY / 100)
+    const newScale = Math.pow(1.1892071150027210667174999705605, newZoomIncrement)
+    const scaleChange = newScale - scale
+    const canvasRect = canvasRef.current.getBoundingClientRect()
+    const [mouseX, mouseY] = [event.pageX - canvasRect.x, event.pageY - canvasRect.y]
+    const [canvX, canvY] = [(-translationX / scale) + (mouseX / scale), (-translationY / scale) + (mouseY / scale)]
+    setTranslationX(translationX - (canvX * scaleChange))
+    setTranslationY(translationY - (canvY * scaleChange))
     setZoomIncrement(newZoomIncrement)
-    setScale(Math.pow(1.1892071150027210667174999705605, newZoomIncrement))
+    setScale(newScale)
   }
 
   const handleMouseEnter = () => canvasRef.current.addEventListener('wheel', event => event.preventDefault(), { passive: false })
@@ -64,12 +71,13 @@ export default function GameBoard() {
       setTranslationY(translationY + event.movementY)
     }
   }
+
   return(
     <canvas
       className="App-canvas"
       ref={canvasRef}
       width={width * .8}
-      height={height}
+      height={height * .8}
       style={{border: "1px solid #000000"}}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
