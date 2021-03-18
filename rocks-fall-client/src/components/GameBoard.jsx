@@ -72,6 +72,21 @@ export default function GameBoard() {
     }
   }
 
+  const handleClick = event => {
+    const canvasRect = canvasRef.current.getBoundingClientRect()
+    const [mouseX, mouseY] = [event.pageX - canvasRect.x + 1, event.pageY - canvasRect.y + 1]
+    const [canvX, canvY] = [(-translationX / scale) + (mouseX / scale), (-translationY / scale) + (mouseY / scale)]
+    console.log('---------------')
+    console.log(canvX)
+    console.log(canvY)
+    console.log(translationX)
+    console.log(translationY)
+    console.log(mouseX)
+    console.log(mouseY)
+    console.log(scale)
+    console.log('---------------')
+  }
+
   return(
     <canvas
       className="App-canvas"
@@ -83,6 +98,7 @@ export default function GameBoard() {
       onMouseLeave={handleMouseLeave}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
+      onClick={handleClick}
       onWheel={handleWheel}
     />
   )
