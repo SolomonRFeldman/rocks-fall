@@ -73,8 +73,8 @@ export default function GameBoard() {
   }
 
   const handleClick = event => {
-    const canvasRect = canvasRef.current.getBoundingClientRect()
-    const [mouseX, mouseY] = [event.pageX - canvasRect.x + 1, event.pageY - canvasRect.y + 1]
+    const canvasPos = canvasRef.current.getBoundingClientRect()
+    const [mouseX, mouseY] = [event.pageX - canvasPos.x + 1, event.pageY - canvasPos.y + 1]
     const [canvX, canvY] = [(-translationX / scale) + (mouseX / scale), (-translationY / scale) + (mouseY / scale)]
     console.log('---------------')
     console.log(canvX)
