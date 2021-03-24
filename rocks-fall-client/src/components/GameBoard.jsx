@@ -52,11 +52,11 @@ export default function GameBoard() {
     const newZoomIncrement = zoomIncrement - (event.deltaY / 100)
     const newScale = Math.pow(1.1892071150027210667174999705605, newZoomIncrement)
     const scaleChange = newScale - scale
-    const canvasRect = canvasRef.current.getBoundingClientRect()
-    const [mouseX, mouseY] = [event.pageX - canvasRect.x, event.pageY - canvasRect.y]
-    const [canvX, canvY] = [(-translationX / scale) + (mouseX / scale), (-translationY / scale) + (mouseY / scale)]
-    setTranslationX(translationX - (canvX * scaleChange))
-    setTranslationY(translationY - (canvY * scaleChange))
+    const canvasPos = canvasRef.current.getBoundingClientRect()
+    const [mouseX, mouseY] = [event.pageX - canvasPos.x + 1, event.pageY - canvasPos.y + 1]
+    const [canvMouseX, canvMouseY] = [(-translationX / scale) + (mouseX / scale), (-translationY / scale) + (mouseY / scale)]
+    setTranslationX(translationX - (canvMouseX * scaleChange))
+    setTranslationY(translationY - (canvMouseY * scaleChange))
     setZoomIncrement(newZoomIncrement)
     setScale(newScale)
   }
@@ -75,10 +75,10 @@ export default function GameBoard() {
   const handleClick = event => {
     const canvasPos = canvasRef.current.getBoundingClientRect()
     const [mouseX, mouseY] = [event.pageX - canvasPos.x + 1, event.pageY - canvasPos.y + 1]
-    const [canvX, canvY] = [(-translationX / scale) + (mouseX / scale), (-translationY / scale) + (mouseY / scale)]
+    const [canvMouseX, canvMouseY] = [(-translationX / scale) + (mouseX / scale), (-translationY / scale) + (mouseY / scale)]
     console.log('---------------')
-    console.log(canvX)
-    console.log(canvY)
+    console.log(canvMouseX)
+    console.log(canvMouseY)
     console.log(translationX)
     console.log(translationY)
     console.log(mouseX)
