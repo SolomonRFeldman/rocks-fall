@@ -1,7 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react'
 import useImage from '../hooks/useImage'
+import useToken from '../hooks/useToken'
 
 export default function GameBoard() {
+  const [map] = useImage('../test_map.png')
+  const [token] = useImage('../test_token.png')
+
   const canvasRef = useRef(null)
   const [ctx, setCtx] = useState(null)
   const [width, setWidth] = useState(window.innerWidth)
@@ -10,11 +14,15 @@ export default function GameBoard() {
   const [translationY, setTranslationY] = useState(0)
   const [zoomIncrement, setZoomIncrement] = useState(0)
   const [scale, setScale] = useState(1)
+  const [clickedObj, setClickedObj] = useState(null)
 
   const [mouseDown, setMouseDown] = useState(false)
 
-  const [map] = useImage('../test_map.png')
-  const [token] = useImage('../test_token.png')
+  
+  const [boardObjects, setBoardObjects] = useState([
+    {id: 1, img: token, pos: {x: 64, y: 64}, size: {width: 64, height: 64}},
+    {id: 2, img: token, pos: {x: 128, y: 128}, size: {width: 64, height: 64}}
+  ])
 
   useEffect(() => { setCtx(canvasRef.current.getContext('2d'))}, [canvasRef])
 
@@ -25,10 +33,10 @@ export default function GameBoard() {
       setHeight(window.innerHeight)
     }
     window.addEventListener('resize', handleResize)
-    window.addEventListener('mouseup', () => setMouseDown(false))
+    window.addEventListener('mouseup', handleMouseUp)
     return () => {
       window.removeEventListener('resize', handleResize)
-      window.removeEventListener('mouseup', () => setMouseDown(false))
+      window.removeEventListener('mouseup', () => handleMouseUp)
     }
   }, [])
 
@@ -40,7 +48,7 @@ export default function GameBoard() {
     ctx.fillRect(-translationX / scale, -translationY / scale, width / scale, height / scale)
 
     ctx.drawImage(map, 0, 0, map.width, map.height)
-    ctx.drawImage(token, 0, 0, 50, 50)
+    boardObjects.map(obj => ctx.drawImage(obj.img, obj.pos.x, obj.pos.y, obj.size.width, obj.size.height))
     
   }
 
@@ -64,11 +72,47 @@ export default function GameBoard() {
   const handleMouseEnter = () => canvasRef.current.addEventListener('wheel', event => event.preventDefault(), { passive: false })
   const handleMouseLeave = () => canvasRef.current.removeEventListener('wheel', event => event.preventDefault(), { passive: false })
 
-  const handleMouseDown = () => setMouseDown(true)
+  const handleMouseDown = event => {
+    setMouseDown(true)
+
+    const canvasPos = canvasRef.current.getBoundingClientRect()
+    const [mouseX, mouseY] = [event.pageX - canvasPos.x + 1, event.pageY - canvasPos.y + 1]
+    const [canvMouseX, canvMouseY] = [(-translationX / scale) + (mouseX / scale), (-translationY / scale) + (mouseY / scale)]
+
+    
+    const objectClicked = boardObjects.find(obj => {
+      return (
+        obj.pos.x <= canvMouseX && (obj.pos.x + obj.size.width) >= canvMouseX &&
+        obj.pos.y <= canvMouseY && (obj.pos.y + obj.size.height) >= canvMouseY
+      )
+    })
+
+    if(objectClicked) {
+      setClickedObj(objectClicked)
+      setBoardObjects([...boardObjects.filter(boardObject => boardObject.id !== objectClicked.id), objectClicked])
+    }
+    console.log(clickedObj)
+  }
+
+  
+  const handleMouseUp = event => {
+    setMouseDown(false)
+    setClickedObj(undefined)
+  }
   const handleMouseMove = event => {
     if (mouseDown) {
-      setTranslationX(translationX + event.movementX)
-      setTranslationY(translationY + event.movementY)
+      if (clickedObj) {
+        const oldPos = clickedObj.pos
+        const updatedObj = {
+          ...clickedObj,
+          pos: {x: oldPos.x + (event.movementX * (1/scale)), y: oldPos.y + (event.movementY * (1/scale))}
+        }
+        setBoardObjects([...boardObjects.filter(boardObject => boardObject.id !== clickedObj.id), updatedObj])
+        setClickedObj(updatedObj)
+      } else {
+        setTranslationX(translationX + event.movementX)
+        setTranslationY(translationY + event.movementY)
+      }
     }
   }
 
