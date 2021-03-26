@@ -5,9 +5,9 @@ export default function useImage(defaultSource) {
   const [image, setImage] = useState(new Image())
 
   useEffect(() => {
-    const loadingImage = new Image()
+    const loadingImage = image
     loadingImage.src = source
-    loadingImage.onload = () => setImage(loadingImage)
+    // loadingImage.onload = () => setImage(loadingImage)
   }, [source])
 
   return(
