@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { w3cwebsocket as W3CWebSocket } from "websocket"
 import useImage from '../hooks/useImage'
 import useToken from '../hooks/useToken'
 
@@ -23,6 +24,36 @@ export default function GameBoard() {
     {id: 1, img: token, pos: {x: 64, y: 64}, size: {width: 64, height: 64}},
     {id: 2, img: token, pos: {x: 128, y: 128}, size: {width: 64, height: 64}}
   ])
+  
+  const [client, setClient] = useState(new W3CWebSocket('ws://localhost:3001/cable'))
+
+  useEffect(() => {
+    client.onopen = () => {
+      console.log('WebSocket Client Connected');
+      client.send(JSON.stringify({
+        command: 'subscribe',
+        identifier: JSON.stringify({ channel: 'BoardChannel' })
+      }))
+    };
+    client.onmessage = (message) => {
+      const data = JSON.parse(message.data)
+      // console.log(data.type)
+      if (data.type !== 'ping' && data.type !== 'welcome' && data.type !== 'confirm_subscription') {
+        if(!(clickedObj && clickedObj.id === data.message.boardObject.id)) {
+          const newPos = data.message.boardObject.pos
+          const objectToUpdate = boardObjects.find(boardObject => boardObject.id === data.message.boardObject.id)
+          const updatedObject = {...objectToUpdate, pos: {x: newPos.x, y: newPos.y}}
+          setBoardObjects([...boardObjects.filter(boardObject => boardObject.id !== data.message.boardObject.id), updatedObject])
+        }
+      }
+    };
+    client.onclose = (message) => {
+      setClient(new W3CWebSocket('ws://localhost:3001/cable'))
+      console.log(message)
+    };
+  })
+
+
 
   useEffect(() => { setCtx(canvasRef.current.getContext('2d'))}, [canvasRef])
 
@@ -90,6 +121,12 @@ export default function GameBoard() {
     if(objectClicked) {
       setClickedObj(objectClicked)
       setBoardObjects([...boardObjects.filter(boardObject => boardObject.id !== objectClicked.id), objectClicked])
+            
+      client.send(JSON.stringify({ 
+        command: 'message',
+        identifier: JSON.stringify({ channel: 'BoardChannel' }),
+        data: JSON.stringify({ boardObject: objectClicked })
+      }))
     }
     console.log(clickedObj)
   }
@@ -109,6 +146,12 @@ export default function GameBoard() {
         }
         setBoardObjects([...boardObjects.filter(boardObject => boardObject.id !== clickedObj.id), updatedObj])
         setClickedObj(updatedObj)
+            
+        client.send(JSON.stringify({ 
+          command: 'message',
+          identifier: JSON.stringify({ channel: 'BoardChannel' }),
+          data: JSON.stringify({ boardObject: updatedObj })
+        }))
       } else {
         setTranslationX(translationX + event.movementX)
         setTranslationY(translationY + event.movementY)
